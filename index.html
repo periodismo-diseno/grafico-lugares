@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Homicidios</title>
+    <!-- Importar Chart.js desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Optimización UI/UX */
+        :root {
+            --color-naranja: #FF7A00;
+            --color-violeta: #7B2CBF;
+            --color-fondo: #f8f9fa;
+            --color-texto: #333333;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            background-color: transparent; /* Ideal para Google Sites */
+        }
+
+        .chart-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            box-sizing: border-box;
+            transition: transform 0.3s ease;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .chart-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            margin: 0;
+            color: var(--color-violeta);
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        .chart-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eeeeee;
+            text-align: right;
+        }
+
+        .source-text {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <h2>Cantidad de Víctimas por Lugar de Agresión</h2>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="lineChart"></canvas>
+        </div>
+
+        <div class="chart-footer">
+            <p class="source-text">Fuente: Informe de Víctimas de Homicidios Consumados en Chile 2025</p>
+        </div>
+    </div>
+
+    <script>
+        // Datos extraídos del archivo "lugar de agresion.json"
+        const datosJSON = [
+            { "Lugar de agresión": "Domicilio común", "Proporción": 0.5, "Cantidad": 23 },
+            { "Lugar de agresión": "Domicilio víctima", "Proporción": 0.152, "Cantidad": 7 },
+            { "Lugar de agresión": "Domicilio victimario", "Proporción": 0.152, "Cantidad": 7 },
+            { "Lugar de agresión": "Vía pública", "Proporción": 0.087, "Cantidad": 4 },
+            { "Lugar de agresión": "Otro lugar", "Proporción": 0.065, "Cantidad": 3 },
+            { "Lugar de agresión": "Sin información", "Proporción": 0.043, "Cantidad": 2 }
+        ];
+
+        // Procesar los datos para el gráfico
+        const etiquetas = datosJSON.map(item => item["Lugar de agresión"]);
+        const cantidades = datosJSON.map(item => item["Cantidad"]);
+
+        // Configuración de Chart.js
+        const ctx = document.getElementById('lineChart').getContext('2d');
+        
+        // Crear gradiente para el fondo debajo de la línea
+        const gradienteFondo = ctx.createLinearGradient(0, 0, 0, 400);
+        gradienteFondo.addColorStop(0, 'rgba(123, 44, 191, 0.4)'); // Violeta semi-transparente
+        gradienteFondo.addColorStop(1, 'rgba(123, 44, 191, 0.0)'); // Transparente al fondo
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: etiquetas,
+                datasets: [{
+                    label: 'Cantidad de Víctimas',
+                    data: cantidades,
+                    borderColor: '#FF7A00', // Anaranjado para la línea
+                    backgroundColor: gradienteFondo, // Violeta para el área inferior
+                    borderWidth: 3,
+                    pointBackgroundColor: '#7B2CBF', // Puntos violetas
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#FF7A00', // Puntos anaranjados al pasar el cursor
+                    pointHoverBorderColor: '#ffffff',
+                    fill: true, // Rellena el área bajo la línea
+                    tension: 0.4 // Hace la línea curva (Smooth UX)
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: false // Ocultamos la leyenda para un diseño más limpio
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(51, 51, 51, 0.95)',
+                        titleColor: '#FF7A00',
+                        bodyColor: '#ffffff',
+                        padding: 12,
+                        cornerRadius: 8,
+                        titleFont: { size: 14, family: 'Inter' },
+                        bodyFont: { size: 14, family: 'Inter', weight: 'bold' },
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `Cantidad: ${context.parsed.y} víctimas`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.04)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: { family: 'Inter', size: 12 },
+                            color: '#6c757d'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: { family: 'Inter', size: 12 },
+                            color: '#6c757d',
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
